@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="httpl://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layouts/default}">
+<div layout:fragment="content" class="container-fluid">
+	 <!-- Page Heading -->
+	<h1 class="h3 mb-2 text-gray-800">게시판</h1>
+	<p class="mb-4">게시판 연습 테이블 만들기 ~~</p>
+	<!-- DataTales Example -->
+	<div class="card shadow mb-4">
+	<div class="card-header py-3">
+		<h6 class="m-0 font-weight-bold text-primary">게시글 내용 테이블모양으로 </h6>
+		<button class="btn btn-success" type="button" id="insertBtn" data-dismiss="modal" onclick="insertBoard()">글 작성</button>
+	</div>
+	<div class="card-body">
+    	<div class="table-responsive">
+			<table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+				<thead>
+					<tr>
+						<th>글번호</th>
+						<th>작성자</th>
+						<th>제목</th>
+						<th>작성일</th>
+						<th>수정일</th>
+						<th>수정&삭제</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="board : ${boardList}">
+						<td th:text="${board.boardId}"></td>
+						<td th:text="${board.writer}"></td>
+						<td th:text="${board.title}"></td>
+						<td th:text="${#dates.format(board.regDate,'yyyy-MM-dd HH:mm:ss')}"></td>
+						<td th:text="${#dates.format(board.updateDate,'yyyy-MM-dd HH:mm:ss')}"></td>
+						<td>
+							<span class="btn-group"><!--버튼을 하나로 보이게끔 묶는다.  -->
+								<button class="btn btn-primary" id="editBtn" th:onclick="readBoard([[${board.boardId}]])">수정</button>
+								<button class="btn btn-secondary" th:onclick="deleteConfirm([[${board.boardId}]])">삭제</button>
+							</span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	
+ 	<!--작성,수정 모달   -->
+	<div class="modal fade" id="boardModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="modalLabel"></h5>
+					<button type="button" id="boardModalClose" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<form>
+						<input id="boardId" type="hidden" />
+						<div class="form-group">
+							<label for="recipient-name" class="col-form-label">제목:</label> 
+							<input type="text" class="form-control" id="boardTitle" maxlength='50'/>
+						</div>
+						<div class="form-group">
+							<label for="message-text" class="col-form-label">내용:</label>
+							<textarea class="form-control" id="boardContent" style="resize:none;" maxlength='1000'></textarea>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+					<button type="button" class="btn btn-primary" id="saveBtn" onclick="saveBoard()">저장</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!--삭제 모달   -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">경고</h5>
+                    <button id="modalClose" class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">정말 삭제하시겠습니까?</div>
+                <input id="boardId" type="hidden"/>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="deleteBoard()">삭제</button>
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">취소</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+	<script th:line="javascript">
+	// Call the dataTables jQuery plugin
+	$(document).ready(function() {
+		$('#dataTable').DataTable();
+	});
+	//모달창 꺼지는 이벤트 인식하여 초기화 시켜주기. 
+	$('#boardModal').on('hidden.bs.modal',function(){
+		$('#boardId').val("");
+		$('#boardTitle').val("");
+		$('#boardContent').val("");
+	});
+	
+	//글 작성하는 페이지 띄우기 
+	function insertBoard() {
+		$('#modalLabel').text("새 글");
+		$('#boardModal').modal();
+	}
+	//작성한 글 저장하기 
+	function saveBoard() {
+		var reqUrl = "";
+		var reqData = {
+			"title" : $('#boardTitle').val().trim(),
+			"content" : $('#boardContent').val().trim()
+		};
+		if(reqData.title == "" || reqData.content == "") {
+			return alert("내용을 입력하여 주십시오");
+ 		}
+ 		if($('#boardId').val() != "") {
+			reqUrl = "/ajaxEditBoard";
+			reqData.boardId = $('#boardId').val();
+ 		} else {
+			reqUrl = "/ajaxInsertBoard";
+			reqData.writer = "임의작성";
+ 		}
+		$.ajax({
+			url: reqUrl,
+			type: 'POST',
+			data: reqData,
+			success: function(result) {
+				if(result.msg == "success") {
+					location.reload();
+				} else {
+					alert(result.msg);
+				}
+			}
+		});
+	}
+	
+	// 수정 -> 수정에 관련한 모달이 떠야 함. 
+	//1. 먼저 글을 읽어와야한다. 
+	function readBoard(boardId) {
+		$('#boardId').val(boardId);//모달창의 boardId 라는 숨겨진 값에 파라미터로 받아 놓은 boardId 값을 넣는다. 
+		//글을 하나 읽어오는 모달 창 -> 서버에다가 읽어오는 요청을 해야함. 
+		$.ajax({
+			url: "/ajaxReadBoard", 
+			type: 'POST', 
+			data: { "boardId":  boardId }, //map방식
+			success: function(result) {
+				//컨트롤러에서 map의 형태로 보내야 json으로 읽는다. 값 넘어온 거 확인 완료
+				//input tag value 를 셋해준다. 
+				$('#boardTitle').val(result.title);
+				$('#boardContent').val(result.content);
+			}
+		});
+		$('#modalLabel').text("수정창");
+		$('#boardModal').modal(); //모달창을 띄운다. 
+	}; 
+	
+	/// 삭제모달 
+	function deleteConfirm(boardId) {//버튼 클릴할 때 파라미터로 값을 넣어 놓았음. 
+		$('#boardId').val(boardId);//모달창의 boardId 라는 숨겨진 값에 파라미터로 받아 놓은 boardId 값을 넣는다. 
+		$('#deleteModal').modal(); //모달창을 띄운다. 
+	};
+	
+	/* 서버에다가 삭제요청-> 삭제가 끝나면 메세지 창을 끄고, 성공했는지 아닌지 새로운 메세지 ->화면이 새로고침 되어야 함   */
+	function deleteBoard() {
+		$('#modalClose').click();//모달창의 x를 클릭한다 (메세지창이 꺼진다. )
+		$.ajax({
+			url: "/ajaxDeleteBoard", //이곳으로 보낸다. 
+			type: 'POST', // 방식
+			data: { "boardId": $('#boardId').val()}, //map방식
+			success: function(result) {
+				if(result.msg == "success") {
+					location.reload();
+				} else {
+					alert(result.msg);
+				}
+			}
+		});
+	};
+	
+	</script>
+</div>
+</html>

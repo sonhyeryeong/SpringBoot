@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="httpl://www.thymeleaf.org">
+	<ul th:fragment="navFragment" class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+		<!-- Sidebar - Brand -->
+		<a class="sidebar-brand d-flex align-items-center justify-content-center">
+			<div class="sidebar-brand-icon rotate-n-15">
+				<i class="fas fa-grin-squint"></i>
+			</div>
+			<div class="sidebar-brand-text mx-3">BOARD 연습</div>
+		</a>
+	
+		<!-- Divider -->
+		<hr class="sidebar-divider my-0">
+	
+		<!-- Nav Item - Pages Collapse Menu -->
+		<li class="nav-item">
+			<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo"> 
+				<i class="fas fa-fw fa-cog"></i>
+				<span>Components</span>
+			</a>
+			<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+				<div class="bg-white py-2 collapse-inner rounded">
+					<h6 class="collapse-header">Custom Components:</h6>
+					<a class="collapse-item" href="">아래메뉴1</a> 
+					<a class="collapse-item" href="">아래메뉴2</a>
+				</div>
+			</div>
+		</li>
+	
+		<!-- Divider -->
+		<hr class="sidebar-divider">
+	
+		<!-- Sidebar Toggler (Sidebar) -->
+		<div class="text-center d-none d-md-inline">
+			<button class="rounded-circle border-0" id="sidebarToggle"></button>
+		</div>
+	</ul>
+</html>
