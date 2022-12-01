@@ -1,7 +1,6 @@
 # SpringBoot
-SpringBoot  &amp; Bootstrap
 ---
-###springboot
+SpringBoot  &amp; Bootstrap
 - templeate-thymeleaf
 - Bootstrap
 - JavaScript
